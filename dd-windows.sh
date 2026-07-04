@@ -200,8 +200,8 @@ function PromptImagePrefix() {
 
   while true
   do
-    echo "请输入镜像目录前缀（将自动拼接：${image_file}，例如 https://your-domain.example/folder_name/）"
-    read -r -p "> " input
+    printf '%s\n' "请输入镜像目录前缀（将自动拼接：${image_file}，例如 https://your-domain.example/folder_name/）" > /dev/tty
+    read -r -p "> " input < /dev/tty
     IMAGE_PREFIX="$input"
     if NormalizeImagePrefix; then
       printf '%s\n' "$IMAGE_PREFIX"
