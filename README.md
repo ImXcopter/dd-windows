@@ -51,7 +51,7 @@ wget --no-check-certificate -O dd-windows.sh https://raw.githubusercontent.com/I
 脚本启动后会先询问是否使用 DHCP 自动配置网络：
 
 ```text
-Using DHCP to configure network automatically? [Y/n]:
+是否使用 DHCP 自动配置网络？[Y/n]:
 ```
 
 输入 `Y` 表示重装后的系统使用 DHCP 自动获取 IP。
@@ -108,8 +108,8 @@ https://your-domain.example/folder_name/nat.ee_Windows%2010_Enterprise_LTSC_2021
 7  Windows 10 LTSC Lite [X64-UEFI-nat.ee]
 8  Windows Server 2022 Lite [X64-Legacy-nat.ee]
 9  Windows Server 2022 Lite [X64-UEFI-nat.ee]
-99 Custom image
-0  Exit
+99 自定义镜像
+0 退出
 ```
 
 选择系统后，脚本会显示对应默认密码，确认后开始调用 `InstallNET.sh` 执行 DD。
@@ -147,7 +147,7 @@ https://your-domain.example/folder_name/nat.ee_Windows%2010_Enterprise_LTSC_2021
 
 ## 自定义镜像
 
-选择 `99 Custom image` 时，可以直接输入完整镜像 URL，不使用上面的固定文件名列表。
+选择 `99 自定义镜像` 时，可以直接输入完整镜像 URL，不使用上面的固定文件名列表。
 
 适合你临时测试其他 DD 镜像，或者不想使用内置 9 个文件名的情况。
 
