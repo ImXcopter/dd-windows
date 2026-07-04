@@ -50,6 +50,19 @@ function UpdateIp() {
   read -r -p "请输入子网掩码: " NETMASK
 }
 
+function ReadYesNoDefaultYes() {
+  local prompt="$1"
+  local input
+
+  read -r -p "${prompt}[Y/n]:" input
+  input="${input:-Y}"
+  case $input in
+    [yY][eE][sS]|[yY]) return 0 ;;
+    [nN][oO]|[nN]) return 1 ;;
+    *) clear; echo "输入错误！"; exit 1 ;;
+  esac
+}
+
 function SetNetwork() {
   isAuto='0'
   if [[ -f '/etc/network/interfaces' ]];then
@@ -79,12 +92,11 @@ function SetNetwork() {
 function NetMode() {
   CopyRight
   if [ "$isAuto" == '0' ]; then
-    read -r -p "是否使用 DHCP 自动配置网络？[Y/n]:" input
-    case $input in
-      [yY][eE][sS]|[yY]) NETSTR='' ;;
-      [nN][oO]|[nN]) isAuto='1' ;;
-      *) clear; echo "用户已取消！"; exit 1;;
-    esac
+    if ReadYesNoDefaultYes "是否使用 DHCP 自动配置网络？"; then
+      NETSTR=''
+    else
+      isAuto='1'
+    fi
   fi
 
   if [ "$isAuto" == '1' ]; then
@@ -99,21 +111,16 @@ function NetMode() {
       echo "网关：$GATEWAYIP"
       echo "子网掩码：$NETMASK"
       echo -e "\n"
-      read -r -p "确认以上网络配置？[Y/n]:" input
-      case $input in
-        [yY][eE][sS]|[yY]) ;;
-        [nN][oO]|[nN])
-          echo -e "\n"
-          UpdateIp
-          ipCheck
-          [[ $? -ne 0 ]] && {
-            clear
-            echo -e "输入错误！\n"
-            exit 1
-          }
-        ;;
-        *) clear; echo "用户已取消！"; exit 1;;
-      esac
+      if ! ReadYesNoDefaultYes "确认以上网络配置？"; then
+        echo -e "\n"
+        UpdateIp
+        ipCheck
+        [[ $? -ne 0 ]] && {
+          clear
+          echo -e "输入错误！\n"
+          exit 1
+        }
+      fi
     fi
     NETSTR="--ip-addr ${MAINIP} --ip-gate ${GATEWAYIP} --ip-mask ${NETMASK}"
   fi
@@ -233,7 +240,15 @@ function Start() {
     rm -f /tmp/InstallNET.sh
   fi
 
-  wget --no-check-certificate -qO /tmp/InstallNET.sh 'https://raw.githubusercontent.com/fcurrk/reinstall/master/InstallNET.sh' && chmod a+x /tmp/InstallNET.sh
+  if ! wget --no-check-certificate -qO /tmp/InstallNET.sh 'https://raw.githubusercontent.com/fcurrk/reinstall/master/InstallNET.sh'; then
+    echo "下载 InstallNET.sh 失败，请检查网络或稍后重试。" >&2
+    exit 1
+  fi
+
+  if ! chmod a+x /tmp/InstallNET.sh; then
+    echo "设置 InstallNET.sh 执行权限失败。" >&2
+    exit 1
+  fi
 
   SetImageFileNames
 
@@ -269,11 +284,13 @@ function Start() {
       read -r -p "> " imgURL
       ValidateImageUrl "$imgURL" || exit 1
       echo -e "\n"
-      read -r -p "确认开始重装吗？[Y/n]: " input
-      case $input in
-        [yY][eE][sS]|[yY]) bash /tmp/InstallNET.sh $NETSTR -dd "$imgURL" $DMIRROR ;;
-        *) clear; echo "用户已取消！"; exit 1;;
-      esac
+      if ReadYesNoDefaultYes "确认开始重装吗？"; then
+        bash /tmp/InstallNET.sh $NETSTR -dd "$imgURL" $DMIRROR
+      else
+        clear
+        echo "用户已取消！"
+        exit 1
+      fi
       ;;
     0) exit 0;;
     *) echo "输入错误！"; exit 1;;
